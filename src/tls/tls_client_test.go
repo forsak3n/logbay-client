@@ -8,16 +8,16 @@ import (
 )
 
 const (
-	CERT_PATH = "../cert.pem"
-	KEY_PATH  = "../key.pem"
-	HOST      = "127.0.0.1"
-	PORT      = 9999
+	CERT_PATH = "../../cert.pem"
+	KEY_PATH  = "../../key.pem"
+	HOST      = "localhost"
+	PORT      = 30443
 )
 
-func getClient() (LogbayClient, error) {
+func getClient(host string) (*logbayClient, error) {
 
 	conf := &Config{
-		Host:            HOST,
+		Host:            host,
 		Port:            PORT,
 		Cert:            CERT_PATH,
 		Key:             KEY_PATH,
@@ -61,17 +61,14 @@ func runServer() error {
 }
 
 func TestNew(t *testing.T) {
-
-	client, err := getClient()
-
-	if err != nil || client == nil {
-		t.Error("Failed to create client", err)
+	if c, err := getClient(HOST); err != nil || c == nil {
+		t.Error("Failed to create logbayClient", err)
 	}
 }
 
 func TestClient_Write(t *testing.T) {
 
-	client, err := getClient()
+	client, err := getClient(HOST)
 	if err != nil {
 		t.Error("Failed to create client", err)
 	}
@@ -80,13 +77,7 @@ func TestClient_Write(t *testing.T) {
 		t.Error("Failed to create server", err)
 	}
 
-	if err := client.Connect(); err != nil {
-		t.Error("Failed to connect", err)
-	}
-
-	_, err = client.Write([]byte("Hello World"))
-
-	if err != nil {
+	if _, err = client.Write([]byte("Hello World")); err != nil {
 		t.Failed()
 	}
 }
